@@ -1,0 +1,6 @@
+@MaiPractice_HostAddress = http://localhost:5150
+
+GET {{MaiPractice_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
