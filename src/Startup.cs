@@ -1,3 +1,7 @@
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+
 namespace Zggff.MaiPractice;
 
 public class Startup(IConfiguration configuration)
@@ -5,8 +9,17 @@ public class Startup(IConfiguration configuration)
     public IConfiguration Configuration { get; } = configuration;
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "ToDo API",
+                Description = "An ASP.NET Core Web API for selecting pets",
+            });
+        });
         services.AddControllers();
+        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
@@ -36,3 +49,4 @@ public class Startup(IConfiguration configuration)
     }
 
 }
+
