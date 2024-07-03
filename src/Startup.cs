@@ -1,5 +1,8 @@
+using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace Zggff.MaiPractice;
@@ -18,9 +21,50 @@ public class Startup(IConfiguration configuration)
                 Description = "An ASP.NET Core Web API for selecting pets",
             });
             options.EnableAnnotations();
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
         });
         services.AddControllers();
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = Configuration["Jwt:Issuer"],
+                ValidAudience = Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"] ?? "")),
+                ClockSkew = TimeSpan.Zero
+            };
+        });
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
@@ -38,6 +82,7 @@ public class Startup(IConfiguration configuration)
         app.UseStaticFiles();
 
         app.UseRouting();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.UseSwagger();
         app.UseSwaggerUI();

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -31,7 +33,9 @@ public class PetController(AppDbContext context) : ControllerBase
 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpPost("pet")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpPost("pet"), Authorize(Roles = "Admin")]
     public async Task<ActionResult<Pet>> Pet(Pet p)
     {
         var pet = await Context.Pets.FindAsync(p.Id);
@@ -46,9 +50,11 @@ public class PetController(AppDbContext context) : ControllerBase
     }
 
 
-    [HttpPut("pet")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpPut("pet"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdatePet(Pet p)
     {
         var pet = await Context.Pets.FindAsync(p.Id);
