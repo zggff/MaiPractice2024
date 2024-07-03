@@ -17,6 +17,7 @@ public class Startup(IConfiguration configuration)
                 Title = "ToDo API",
                 Description = "An ASP.NET Core Web API for selecting pets",
             });
+            options.EnableAnnotations();
         });
         services.AddControllers();
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));

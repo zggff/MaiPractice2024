@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Zggff.MaiPractice.Controllers;
-
+[SwaggerTag("Get pet info")]
 [ApiController]
 public class PetController(AppDbContext context) : ControllerBase
 {
     public AppDbContext Context { get; } = context;
 
-
+    [SwaggerOperation(Summary = "get pet by id")]
     [HttpGet("pet/{id}")]
+    [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found")]
     [ProducesResponseType<Pet>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PetById(uint id)
