@@ -11,8 +11,8 @@ using Zggff.MaiPractice;
 namespace MaiPractice.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240703134424_Pets")]
-    partial class Pets
+    [Migration("20240703180525_Migr")]
+    partial class Migr
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,6 +47,30 @@ namespace MaiPractice.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Pets");
+                });
+
+            modelBuilder.Entity("Zggff.MaiPractice.User", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

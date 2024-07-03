@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MaiPractice.Migrations
 {
     /// <inheritdoc />
-    public partial class Pets : Migration
+    public partial class Migr : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,6 +26,21 @@ namespace MaiPractice.Migrations
                 {
                     table.PrimaryKey("PK_Pets", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Login = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
@@ -33,6 +48,9 @@ namespace MaiPractice.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Pets");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }
