@@ -17,7 +17,7 @@ public class Startup(IConfiguration configuration)
             options.SwaggerDoc("v1", new OpenApiInfo
             {
                 Version = "v1",
-                Title = "ToDo API",
+                Title = "PetSelector",
                 Description = "An ASP.NET Core Web API for selecting pets",
             });
             options.EnableAnnotations();
