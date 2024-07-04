@@ -1,12 +1,16 @@
 
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Zggff.MaiPractice.Controllers;
+
+record LoginResult(string Token);
 
 public class AuthController(IConfiguration configuration, AppDbContext context) : ControllerBase
 {
@@ -14,8 +18,11 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
     public IConfiguration Configuration { get; } = configuration;
 
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(string login, string password)
+    [SwaggerOperation(Summary = "login")]
+    [SwaggerResponse(StatusCodes.Status200OK, "username and password are correct", typeof(LoginResult))]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "incorrect username or password", typeof(void))]
+    [HttpGet("login")]
+    public async Task<IActionResult> Login([Required] string login, [Required] string password)
     {
         var login_lower = login.ToLower();
         var user = await Context.Users.SingleOrDefaultAsync(u => u.Login == login_lower);
@@ -30,8 +37,11 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         return Ok(new { Token = CreateToken(user) });
     }
 
+    [SwaggerOperation(Summary = "register")]
+    [SwaggerResponse(StatusCodes.Status200OK, "registration successfull", typeof(LoginResult))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "user with login already exists", typeof(void))]
     [HttpPost("register")]
-    public async Task<IActionResult> Register(string login, string password)
+    public async Task<IActionResult> Register([Required] string login, [Required] string password)
     {
         var login_lower = login.ToLower();
         if (await Context.Users.AnyAsync(b => b.Login == login_lower))
@@ -46,7 +56,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         };
         await Context.Users.AddAsync(user);
         await Context.SaveChangesAsync();
-        return Ok();
+        return Ok(new { Token = CreateToken(user) });
     }
 
     public string CreateToken(User user)
@@ -55,11 +65,11 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"] ?? ""));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
+            Subject = new ClaimsIdentity(
+            [
             new Claim(ClaimTypes.Name, user.Login != null ? user.Login : ""),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
-            }),
+            ]),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
             Issuer = Configuration["Jwt:Issuer"],
