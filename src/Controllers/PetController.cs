@@ -10,7 +10,7 @@ namespace Zggff.MaiPractice.Controllers;
 [ApiController]
 public class PetController(AppDbContext context) : ControllerBase
 {
-    public AppDbContext Context { get; } = context;
+    private AppDbContext _context { get; } = context;
 
     [SwaggerOperation(Summary = "get pet by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
@@ -18,7 +18,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpGet("pet/{id}")]
     public async Task<IActionResult> PetById(uint id)
     {
-        var pet = await Context.Pets.FindAsync(id);
+        var pet = await _context.Pets.FindAsync(id);
         return pet == null ? NotFound("id not in database") : Ok(pet);
     }
 
@@ -27,7 +27,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpGet("pets")]
     public async Task<ActionResult<IEnumerable<Pet>>> Pets()
     {
-        return await Context.Pets.ToListAsync();
+        return await _context.Pets.ToListAsync();
     }
 
     [SwaggerOperation(Summary = "add pet to database")]
@@ -38,14 +38,14 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpPost("pet"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> Pet(Pet p)
     {
-        var pet = await Context.Pets.FindAsync(p.Id);
+        var pet = await _context.Pets.FindAsync(p.Id);
         if (pet != null)
         {
             return BadRequest();
         }
 
-        await Context.Pets.AddAsync(p);
-        await Context.SaveChangesAsync();
+        await _context.Pets.AddAsync(p);
+        await _context.SaveChangesAsync();
         return Ok();
     }
 
@@ -58,7 +58,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpPut("pet"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdatePet(Pet p)
     {
-        var pet = await Context.Pets.FindAsync(p.Id);
+        var pet = await _context.Pets.FindAsync(p.Id);
         if (pet == null)
         {
             return NotFound("id not in database");
@@ -67,7 +67,7 @@ public class PetController(AppDbContext context) : ControllerBase
         pet.PhotoUrls = p.PhotoUrls;
         pet.Species = p.Species;
         pet.Status = p.Status;
-        await Context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return Ok();
     }
 }

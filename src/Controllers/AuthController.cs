@@ -14,8 +14,8 @@ record LoginResult(string Token);
 
 public class AuthController(IConfiguration configuration, AppDbContext context) : ControllerBase
 {
-    private AppDbContext Context { get; } = context;
-    public IConfiguration Configuration { get; } = configuration;
+    private AppDbContext _context { get; } = context;
+    private IConfiguration _configuration { get; } = configuration;
 
 
     [SwaggerOperation(Summary = "login")]
@@ -25,7 +25,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
     public async Task<IActionResult> Login([Required] string login, [Required] string password)
     {
         var login_lower = login.ToLower();
-        var user = await Context.Users.SingleOrDefaultAsync(u => u.Login == login_lower);
+        var user = await _context.Users.SingleOrDefaultAsync(u => u.Login == login_lower);
         if (user == null)
         {
             return Unauthorized("User " + login_lower + " does not exist");
@@ -44,7 +44,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
     public async Task<IActionResult> Register([Required] string login, [Required] string password)
     {
         var login_lower = login.ToLower();
-        if (await Context.Users.AnyAsync(b => b.Login == login_lower))
+        if (await _context.Users.AnyAsync(b => b.Login == login_lower))
         {
             return BadRequest();
         }
@@ -54,15 +54,15 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
             Password = BCrypt.Net.BCrypt.HashPassword(password),
             Role = Role.User,
         };
-        await Context.Users.AddAsync(user);
-        await Context.SaveChangesAsync();
+        await _context.Users.AddAsync(user);
+        await _context.SaveChangesAsync();
         return Ok(new { Token = CreateToken(user) });
     }
 
     public string CreateToken(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"] ?? ""));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(
@@ -72,8 +72,8 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
             ]),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
-            Issuer = Configuration["Jwt:Issuer"],
-            Audience = Configuration["Jwt:Audience"],
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"],
 
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
