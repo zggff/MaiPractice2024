@@ -12,7 +12,7 @@ public class PetController(AppDbContext context) : ControllerBase
 {
     private AppDbContext _context { get; } = context;
 
-    [SwaggerOperation(Summary = "get pet by id")]
+    [SwaggerOperation("get pet by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found", typeof(void))]
     [HttpGet("pet/{id}")]
@@ -22,7 +22,7 @@ public class PetController(AppDbContext context) : ControllerBase
         return pet == null ? NotFound("id not in database") : Ok(pet);
     }
 
-    [SwaggerOperation(Summary = "list all pets in database")]
+    [SwaggerOperation("list all pets in database")]
     [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Pet[]), Description = "all pets were listed")]
     [HttpGet("pets")]
     public async Task<ActionResult<IEnumerable<Pet>>> Pets()
@@ -30,7 +30,7 @@ public class PetController(AppDbContext context) : ControllerBase
         return await _context.Pets.ToListAsync();
     }
 
-    [SwaggerOperation(Summary = "add pet to database")]
+    [SwaggerOperation("add pet to database")]
     [SwaggerResponse(StatusCodes.Status200OK, "pet was added", typeof(void))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "pet with such id already exists", typeof(void))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
@@ -50,7 +50,7 @@ public class PetController(AppDbContext context) : ControllerBase
     }
 
 
-    [SwaggerOperation(Summary = "change pet in database")]
+    [SwaggerOperation("change pet in database")]
     [SwaggerResponse(StatusCodes.Status200OK, "pet was changed", typeof(void))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "pet with such id does not exists", typeof(void))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]

@@ -18,7 +18,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
     private IConfiguration _configuration { get; } = configuration;
 
 
-    [SwaggerOperation(Summary = "login")]
+    [SwaggerOperation("login")]
     [SwaggerResponse(StatusCodes.Status200OK, "username and password are correct", typeof(LoginResult))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "incorrect username or password", typeof(void))]
     [HttpGet("login")]
@@ -37,7 +37,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         return Ok(new { Token = CreateToken(user) });
     }
 
-    [SwaggerOperation(Summary = "register")]
+    [SwaggerOperation("register")]
     [SwaggerResponse(StatusCodes.Status200OK, "registration successfull", typeof(LoginResult))]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "user with login already exists", typeof(void))]
     [HttpPost("register")]
