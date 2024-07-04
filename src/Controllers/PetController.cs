@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,31 +13,30 @@ public class PetController(AppDbContext context) : ControllerBase
     public AppDbContext Context { get; } = context;
 
     [SwaggerOperation(Summary = "get pet by id")]
+    [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found", typeof(void))]
     [HttpGet("pet/{id}")]
-    [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found")]
-    [ProducesResponseType<Pet>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PetById(uint id)
     {
         var pet = await Context.Pets.FindAsync(id);
         return pet == null ? NotFound("id not in database") : Ok(pet);
     }
 
-    [ProducesResponseType<Pet[]>(StatusCodes.Status200OK)]
+    [SwaggerOperation(Summary = "list all pets in database")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Pet[]), Description = "all pets were listed")]
     [HttpGet("pets")]
     public async Task<ActionResult<IEnumerable<Pet>>> Pets()
     {
         return await Context.Pets.ToListAsync();
     }
 
-
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [SwaggerOperation(Summary = "add pet to database")]
+    [SwaggerResponse(StatusCodes.Status200OK, "pet was added", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "pet with such id already exists", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status403Forbidden, "user does not have permission to perform action", typeof(void))]
     [HttpPost("pet"), Authorize(Roles = "Admin")]
-    public async Task<ActionResult<Pet>> Pet(Pet p)
+    public async Task<IActionResult> Pet(Pet p)
     {
         var pet = await Context.Pets.FindAsync(p.Id);
         if (pet != null)
@@ -50,10 +50,11 @@ public class PetController(AppDbContext context) : ControllerBase
     }
 
 
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [SwaggerOperation(Summary = "change pet in database")]
+    [SwaggerResponse(StatusCodes.Status200OK, "pet was changed", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "pet with such id does not exists", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
+    [SwaggerResponse(StatusCodes.Status403Forbidden, "user does not have permission to perform action", typeof(void))]
     [HttpPut("pet"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdatePet(Pet p)
     {
