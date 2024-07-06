@@ -59,7 +59,7 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         return Ok(new { Token = CreateToken(user) });
     }
 
-    public string CreateToken(User user)
+    private string CreateToken(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
