@@ -64,6 +64,7 @@ public class Startup(IConfiguration configuration)
                 ClockSkew = TimeSpan.Zero
             };
         });
+        services.AddHttpContextAccessor();
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
