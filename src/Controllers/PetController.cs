@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,12 +26,9 @@ public class PetController(AppDbContext context) : ControllerBase
     [SwaggerOperation("list pets in database. You can select the status of pets to be selected")]
     [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Pet[]), Description = "all pets were listed")]
     [HttpGet("list")]
-    public async Task<ActionResult<IEnumerable<Pet>>> List(PetStatus? status)
+    public async Task<IActionResult> List([Required, FromQuery] HashSet<PetStatus> statuses)
     {
-        if (status == null)
-            return Ok(await context.Pets.ToListAsync());
-
-        return Ok(await context.Pets.Where(p => p.Status == status).ToListAsync());
+        return Ok(await context.Pets.Where(u => statuses.Contains(u.Status)).ToListAsync());
     }
 
     [SwaggerOperation("add pet to database")]

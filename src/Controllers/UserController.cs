@@ -61,12 +61,9 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "user does not have permission to perform action", typeof(void))]
     [HttpGet("list"), Authorize(Roles = "Admin")]
-    public async Task<IActionResult> List(UserRole? role)
+    public async Task<IActionResult> List([Required, FromQuery] HashSet<UserRole> roles)
     {
-        if (role == null)
-            return Ok(await context.Users.ToListAsync());
-
-        return Ok(await context.Users.Where(u => u.Role == role).ToListAsync());
+        return Ok(await context.Users.Where(u => roles.Contains(u.Role)).ToListAsync());
     }
 
     [SwaggerOperation("update user information. User must be logged in")]
