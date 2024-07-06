@@ -9,7 +9,7 @@ namespace Zggff.MaiPractice;
 
 public class Startup(IConfiguration configuration)
 {
-    private IConfiguration _configuration { get; } = configuration;
+    private IConfiguration configuration { get; } = configuration;
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddSwaggerGen(options =>
@@ -49,7 +49,7 @@ public class Startup(IConfiguration configuration)
             });
         });
         services.AddControllers();
-        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
@@ -58,9 +58,9 @@ public class Startup(IConfiguration configuration)
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = _configuration["Jwt:Issuer"],
-                ValidAudience = _configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "")),
+                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidAudience = configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? "")),
                 ClockSkew = TimeSpan.Zero
             };
         });

@@ -11,7 +11,7 @@ namespace Zggff.MaiPractice.Controllers;
 [ApiController]
 public class PetController(AppDbContext context) : ControllerBase
 {
-    private AppDbContext _context { get; } = context;
+    private AppDbContext context { get; } = context;
 
     [SwaggerOperation("get pet by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
@@ -19,7 +19,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> PetById(uint id)
     {
-        var pet = await _context.Pets.FindAsync(id);
+        var pet = await context.Pets.FindAsync(id);
         return pet == null ? NotFound("id not in database") : Ok(pet);
     }
 
@@ -29,10 +29,9 @@ public class PetController(AppDbContext context) : ControllerBase
     public async Task<ActionResult<IEnumerable<Pet>>> List(PetStatus? status)
     {
         if (status == null)
-        {
-            return Ok(await _context.Pets.ToListAsync());
-        }
-        return Ok(await _context.Pets.Where(p => p.Status == status).ToListAsync());
+            return Ok(await context.Pets.ToListAsync());
+
+        return Ok(await context.Pets.Where(p => p.Status == status).ToListAsync());
     }
 
     [SwaggerOperation("add pet to database")]
@@ -43,8 +42,8 @@ public class PetController(AppDbContext context) : ControllerBase
     public async Task<IActionResult> Pet(Pet p)
     {
         p.Id = 0;
-        await _context.Pets.AddAsync(p);
-        await _context.SaveChangesAsync();
+        await context.Pets.AddAsync(p);
+        await context.SaveChangesAsync();
         return Ok();
     }
 
@@ -57,16 +56,15 @@ public class PetController(AppDbContext context) : ControllerBase
     [HttpPut(""), Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdatePet(Pet p)
     {
-        var pet = await _context.Pets.FindAsync(p.Id);
+        var pet = await context.Pets.FindAsync(p.Id);
         if (pet == null)
-        {
             return NotFound("id not in database");
-        }
+
         pet.Name = p.Name;
         pet.PhotoUrls = p.PhotoUrls;
         pet.Species = p.Species;
         pet.Status = p.Status;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return Ok();
     }
 }

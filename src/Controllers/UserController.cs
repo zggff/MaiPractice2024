@@ -16,10 +16,10 @@ record LoginResult(string Token);
 
 [Route("user")]
 [ApiController]
-public class UserController(IConfiguration configuration, AppDbContext context) : ControllerBase
+public class UserController(IConfiguration configuration, AppDbContext context, IHttpContextAccessor accessor) : ControllerBase
 {
-    private AppDbContext _context { get; } = context;
-    private IConfiguration _configuration { get; } = configuration;
+    private AppDbContext context { get; } = context;
+    private JwtHandler jwt { get; } = new JwtHandler(configuration, accessor);
 
 
     [SwaggerOperation("login")]
@@ -29,16 +29,13 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     public async Task<IActionResult> Login([Required] string login, [Required] string password)
     {
         var login_lower = login.ToLower();
-        var user = await _context.Users.SingleOrDefaultAsync(u => u.Login == login_lower);
+        var user = await context.Users.SingleOrDefaultAsync(u => u.Login == login_lower);
         if (user == null)
-        {
             return Unauthorized("User " + login_lower + " does not exist");
-        }
+
         if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-        {
             return Unauthorized("Invalid username of password");
-        }
-        return Ok(new LoginResult(CreateToken(user)));
+        return Ok(new LoginResult(jwt.Token(user)));
     }
 
     [SwaggerOperation("register")]
@@ -52,13 +49,12 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         user.Id = 0;
 
-        if (await _context.Users.AnyAsync(b => b.Login == user.Login))
-        {
+        if (await context.Users.AnyAsync(b => b.Login == user.Login))
             return BadRequest();
-        }
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
-        return Ok(new LoginResult(CreateToken(user)));
+
+        await context.Users.AddAsync(user);
+        await context.SaveChangesAsync();
+        return Ok(new LoginResult(jwt.Token(user)));
     }
 
     [SwaggerOperation("list all users")]
@@ -69,10 +65,9 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     public async Task<IActionResult> List(UserRole? role)
     {
         if (role == null)
-        {
-            return Ok(await _context.Users.ToListAsync());
-        }
-        return Ok(await _context.Users.Where(u => u.Role == role).ToListAsync());
+            return Ok(await context.Users.ToListAsync());
+
+        return Ok(await context.Users.Where(u => u.Role == role).ToListAsync());
     }
 
     [SwaggerOperation("update user information. User must be logged in")]
@@ -82,29 +77,20 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     [HttpPut("update"), Authorize]
     public async Task<IActionResult> Update(User new_user)
     {
-        var claimsIdentity = User.Identity as ClaimsIdentity;
-        if (claimsIdentity == null)
-        {
-            return Unauthorized();
-        }
-        var loginClaim = claimsIdentity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+        var loginClaim = jwt.Claim(ClaimTypes.Name);
         if (loginClaim == null)
-        {
             return Unauthorized();
-        }
-        var login = loginClaim.Value;
-        var user = await _context.Users.SingleOrDefaultAsync(u => u.Login == login);
+
+        var user = await context.Users.SingleOrDefaultAsync(u => u.Login == loginClaim);
         if (user == null)
-        {
-            return NotFound("User " + login + " does not exist");
-        }
+            return NotFound("User " + loginClaim + " does not exist");
 
         user.Login = new_user.Login.ToLower();
         user.Password = BCrypt.Net.BCrypt.HashPassword(new_user.Password);
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         // we return new token, as it has the updated login
-        return Ok(new LoginResult(CreateToken(user)));
+        return Ok(new LoginResult(jwt.Token(user)));
     }
 
     [SwaggerOperation("elevate user into admin. User must be logged in as Admin")]
@@ -115,13 +101,11 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     [HttpPut("elevate"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> Elevate(uint id)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await context.Users.FindAsync(id);
         if (user == null)
-        {
             return NotFound("user with id " + id + " does not exist");
-        }
         user.Role = UserRole.Admin;
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return Ok();
     }
 
@@ -132,26 +116,16 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     [HttpGet("{login}"), Authorize]
     public async Task<IActionResult> GetUser(string? login)
     {
-        var claimsIdentity = User.Identity as ClaimsIdentity;
-        if (claimsIdentity == null)
-        {
+        var login_claim = jwt.Claim(ClaimTypes.Name);
+        var role_claim = jwt.Claim(ClaimTypes.Role);
+        if (login_claim == null || role_claim == null)
             return Unauthorized();
-        }
-        var loginClaim = claimsIdentity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
-        var roleClaim = claimsIdentity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role);
-        if (loginClaim == null || roleClaim == null)
-        {
-            return Unauthorized();
-        }
-        if (loginClaim.Value != login && roleClaim.Value != UserRole.Admin.ToString())
-        {
+        if (login_claim != login && role_claim != UserRole.Admin.ToString())
             return Forbid();
-        }
-        var user = await _context.Users.SingleOrDefaultAsync(u => u.Login == login);
+
+        var user = await context.Users.SingleOrDefaultAsync(u => u.Login == login);
         if (user == null)
-        {
             return NotFound("User " + login + " does not exist");
-        }
         return Ok(user);
     }
 
@@ -162,49 +136,18 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     [HttpDelete("{login}"), Authorize]
     public async Task<IActionResult> DeleteUser(string? login)
     {
-        var claimsIdentity = User.Identity as ClaimsIdentity;
-        if (claimsIdentity == null)
-        {
+        var claim = jwt.Claim(ClaimTypes.Name);
+        if (claim == null)
             return Unauthorized();
-        }
-        var loginClaim = claimsIdentity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
-        if (loginClaim == null)
-        {
-            return Unauthorized();
-        }
-        if (loginClaim.Value != login)
-        {
+        if (claim != login)
             return Forbid();
-        }
-        var user = await _context.Users.SingleOrDefaultAsync(u => u.Login == login);
+
+        var user = await context.Users.SingleOrDefaultAsync(u => u.Login == login);
         if (user == null)
-        {
             return NotFound("User " + login + " does not exist");
-        }
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
+
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
         return Ok();
     }
-
-    private string CreateToken(User user)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(
-            [
-                new Claim(ClaimTypes.Name, user.Login != null ? user.Login : ""),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
-            ]),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"],
-
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
-    }
-
 }
