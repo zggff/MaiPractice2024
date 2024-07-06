@@ -2,19 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Zggff.MaiPractice.Models;
 
-namespace Zggff.MaiPractice;
+namespace Zggff.MaiPractice.Components;
 
-public class JwtHandler(IConfiguration configuration, IHttpContextAccessor accessor)
+
+public class JwtHandler(IConfiguration configuration)
 {
     private IConfiguration configuration { get; } = configuration;
-    private IHttpContextAccessor accessor { get; } = accessor;
-
-    public string? Claim(string claim_type)
-    {
-        return accessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == claim_type)?.Value;
-    }
-
     public string Token(User user, double hours = 1)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

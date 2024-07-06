@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
 
-namespace Zggff.MaiPractice;
+namespace Zggff.MaiPractice.Models;
 
 public class User
 {

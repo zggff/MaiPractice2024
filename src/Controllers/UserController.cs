@@ -1,14 +1,12 @@
 
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
+using Zggff.MaiPractice.Components;
+using Zggff.MaiPractice.Models;
+
 
 namespace Zggff.MaiPractice.Controllers;
 
@@ -19,7 +17,8 @@ record LoginResult(string Token);
 public class UserController(IConfiguration configuration, AppDbContext context, IHttpContextAccessor accessor) : ControllerBase
 {
     private AppDbContext context { get; } = context;
-    private JwtHandler jwt { get; } = new JwtHandler(configuration, accessor);
+    private ClaimHandler claims { get; } = new ClaimHandler(accessor);
+    private JwtHandler jwt { get; } = new JwtHandler(configuration);
 
 
     [SwaggerOperation("login")]
@@ -77,9 +76,7 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
     [HttpPut("update"), Authorize]
     public async Task<IActionResult> Update(User new_user)
     {
-        var loginClaim = jwt.Claim(ClaimTypes.Name);
-        if (loginClaim == null)
-            return Unauthorized();
+        var loginClaim = claims.Login();
 
         var user = await context.Users.SingleOrDefaultAsync(u => u.Login == loginClaim);
         if (user == null)
@@ -116,11 +113,9 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
     [HttpGet("{login}"), Authorize]
     public async Task<IActionResult> GetUser(string? login)
     {
-        var login_claim = jwt.Claim(ClaimTypes.Name);
-        var role_claim = jwt.Claim(ClaimTypes.Role);
-        if (login_claim == null || role_claim == null)
-            return Unauthorized();
-        if (login_claim != login && role_claim != UserRole.Admin.ToString())
+        var login_claim = claims.Login();
+        var role_claim = claims.Role();
+        if (login_claim != login && role_claim != UserRole.Admin)
             return Forbid();
 
         var user = await context.Users.SingleOrDefaultAsync(u => u.Login == login);
@@ -136,10 +131,8 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
     [HttpDelete("{login}"), Authorize]
     public async Task<IActionResult> DeleteUser(string? login)
     {
-        var claim = jwt.Claim(ClaimTypes.Name);
-        if (claim == null)
-            return Unauthorized();
-        if (claim != login)
+        var loginClaim = claims.Login();
+        if (loginClaim != login)
             return Forbid();
 
         var user = await context.Users.SingleOrDefaultAsync(u => u.Login == login);

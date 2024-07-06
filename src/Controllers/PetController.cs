@@ -1,9 +1,8 @@
-using System.ComponentModel;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
+using Zggff.MaiPractice.Models;
 
 namespace Zggff.MaiPractice.Controllers;
 

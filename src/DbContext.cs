@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-namespace Zggff.MaiPractice;
+using Zggff.MaiPractice.Models;
 
 public class AppDbContext : DbContext
 {
