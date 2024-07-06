@@ -26,7 +26,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [SwaggerOperation("list pets in database. You can select the status of pets to be selected")]
     [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Pet[]), Description = "all pets were listed")]
     [HttpGet("list")]
-    public async Task<ActionResult<IEnumerable<Pet>>> List(Status? status)
+    public async Task<ActionResult<IEnumerable<Pet>>> List(PetStatus? status)
     {
         if (status == null)
         {

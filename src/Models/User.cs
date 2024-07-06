@@ -14,11 +14,11 @@ public class User
     public required string Login { get; set; }
     [Required(ErrorMessage = "Password is required")]
     public required string Password { get; set; }
-    public Role Role { get; set; }
+    public UserRole Role { get; set; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum Role
+public enum UserRole
 {
     User,
     Admin,

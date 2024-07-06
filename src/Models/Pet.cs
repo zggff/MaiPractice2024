@@ -14,11 +14,11 @@ public class Pet
     public string? Species { get; set; }
     public string[]? PhotoUrls { get; set; }
 
-    public Status Status { get; set; }
+    public PetStatus Status { get; set; }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
-public enum Status
+public enum PetStatus
 {
     Available,
     Pending,

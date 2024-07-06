@@ -48,7 +48,7 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     public async Task<IActionResult> Register([Required][FromBody] User user)
     {
         user.Login = user.Login.ToLower();
-        user.Role = Role.User;
+        user.Role = UserRole.User;
         user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
         user.Id = 0;
 
@@ -66,7 +66,7 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "user does not have permission to perform action", typeof(void))]
     [HttpGet("list"), Authorize(Roles = "Admin")]
-    public async Task<IActionResult> List(Role? role)
+    public async Task<IActionResult> List(UserRole? role)
     {
         if (role == null)
         {
@@ -120,7 +120,7 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
         {
             return NotFound("user with id " + id + " does not exist");
         }
-        user.Role = Role.Admin;
+        user.Role = UserRole.Admin;
         await _context.SaveChangesAsync();
         return Ok();
     }
@@ -143,7 +143,7 @@ public class UserController(IConfiguration configuration, AppDbContext context) 
         {
             return Unauthorized();
         }
-        if (loginClaim.Value != login && roleClaim.Value != Role.Admin.ToString())
+        if (loginClaim.Value != login && roleClaim.Value != UserRole.Admin.ToString())
         {
             return Forbid();
         }
