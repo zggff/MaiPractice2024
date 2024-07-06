@@ -16,7 +16,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [SwaggerOperation("get pet by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found", typeof(void))]
-    [HttpGet("pet")]
+    [HttpGet("pet/{id}")]
     public async Task<IActionResult> PetById(uint id)
     {
         var pet = await _context.Pets.FindAsync(id);
