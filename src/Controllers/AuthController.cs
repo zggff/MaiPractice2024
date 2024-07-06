@@ -67,8 +67,8 @@ public class AuthController(IConfiguration configuration, AppDbContext context) 
         {
             Subject = new ClaimsIdentity(
             [
-            new Claim(ClaimTypes.Name, user.Login != null ? user.Login : ""),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(ClaimTypes.Name, user.Login != null ? user.Login : ""),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
             ]),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
