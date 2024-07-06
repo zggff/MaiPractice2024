@@ -12,7 +12,7 @@ namespace Zggff.MaiPractice.Controllers;
 
 record LoginResult(string Token);
 
-public class AuthController(IConfiguration configuration, AppDbContext context) : ControllerBase
+public class UserController(IConfiguration configuration, AppDbContext context) : ControllerBase
 {
     private AppDbContext _context { get; } = context;
     private IConfiguration _configuration { get; } = configuration;
