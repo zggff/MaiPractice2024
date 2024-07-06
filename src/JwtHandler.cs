@@ -15,7 +15,7 @@ public class JwtHandler(IConfiguration configuration, IHttpContextAccessor acces
         return accessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == claim_type)?.Value;
     }
 
-    public string Token(User user)
+    public string Token(User user, double hours = 1)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? ""));
@@ -23,10 +23,11 @@ public class JwtHandler(IConfiguration configuration, IHttpContextAccessor acces
         {
             Subject = new ClaimsIdentity(
             [
-                new Claim(ClaimTypes.Name, user.Login != null ? user.Login : ""),
+                new Claim(ClaimTypes.Name, user.Login),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
             ]),
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.AddHours(hours),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature),
             Issuer = configuration["Jwt:Issuer"],
             Audience = configuration["Jwt:Audience"],
