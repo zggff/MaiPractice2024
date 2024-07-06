@@ -11,7 +11,8 @@ public class Order
     public uint PetId { get; set; }
     public uint UserId { get; set; }
 
-    public DateTime Placed { get; set; }
+    public DateTime PlacedDate { get; set; }
+    public DateTime CompletedDate { get; set; }
     public OrderStatus Status { get; set; }
 
 }

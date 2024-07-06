@@ -35,7 +35,7 @@ public class StoreController(AppDbContext context, IHttpContextAccessor accessor
             PetId = petId,
             UserId = userId,
             Status = OrderStatus.Placed,
-            Placed = DateTime.Now
+            PlacedDate = DateTime.Now
         };
         await context.Orders.AddAsync(order);
         await context.SaveChangesAsync();
@@ -96,7 +96,10 @@ public class StoreController(AppDbContext context, IHttpContextAccessor accessor
         if (order.Status == OrderStatus.Placed)
             order.Status = OrderStatus.Approved;
         else if (order.Status == OrderStatus.Approved)
+        {
             order.Status = OrderStatus.Completed;
+            order.CompletedDate = DateTime.Now;
+        }
 
         await context.SaveChangesAsync();
         return Ok();
