@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Zggff.MaiPractice.Controllers;
-[SwaggerTag("Get pet info")]
+
+[Route("pet")]
 [ApiController]
 public class PetController(AppDbContext context) : ControllerBase
 {
@@ -15,7 +16,7 @@ public class PetController(AppDbContext context) : ControllerBase
     [SwaggerOperation("get pet by id")]
     [SwaggerResponse(StatusCodes.Status200OK, "the pet with id was found", typeof(Pet))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "no pet with such id was found", typeof(void))]
-    [HttpGet("pet/{id}")]
+    [HttpGet("pet")]
     public async Task<IActionResult> PetById(uint id)
     {
         var pet = await _context.Pets.FindAsync(id);
@@ -32,18 +33,12 @@ public class PetController(AppDbContext context) : ControllerBase
 
     [SwaggerOperation("add pet to database")]
     [SwaggerResponse(StatusCodes.Status200OK, "pet was added", typeof(void))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "pet with such id already exists", typeof(void))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "user does not have permission to perform action", typeof(void))]
     [HttpPost("pet"), Authorize(Roles = "Admin")]
     public async Task<IActionResult> Pet(Pet p)
     {
-        var pet = await _context.Pets.FindAsync(p.Id);
-        if (pet != null)
-        {
-            return BadRequest();
-        }
-
+        p.Id = 0;
         await _context.Pets.AddAsync(p);
         await _context.SaveChangesAsync();
         return Ok();
