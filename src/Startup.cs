@@ -50,8 +50,7 @@ public class Startup(IConfiguration configuration)
         });
         services.AddControllers();
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection")));
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
