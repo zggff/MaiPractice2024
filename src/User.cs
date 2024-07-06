@@ -7,7 +7,6 @@ namespace Zggff.MaiPractice;
 public class User
 {
     // id in the database
-    [ScaffoldColumn(false)]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public uint Id { get; set; }
     [Required(ErrorMessage = "Login is required")]
