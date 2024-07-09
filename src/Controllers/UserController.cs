@@ -103,6 +103,7 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
         return Ok();
     }
 
+    [SwaggerOperation("get information about the user. You must be logged in as the user")]
     [SwaggerResponse(StatusCodes.Status200OK, "ok", typeof(User))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "user does not exist", typeof(void))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
@@ -121,6 +122,7 @@ public class UserController(IConfiguration configuration, AppDbContext context, 
         return Ok(user);
     }
 
+    [SwaggerOperation("delete the user. You must be logged in as the user")]
     [SwaggerResponse(StatusCodes.Status200OK, "ok", typeof(User))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "user does not exist", typeof(void))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "user is not authorised", typeof(void))]
