@@ -6,9 +6,12 @@ using Microsoft.OpenApi.Models;
 
 namespace Zggff.MaiPractice;
 
-public class Startup(IConfiguration configuration)
+public class Startup(IConfiguration configuration, AppDbContext context)
 {
     private IConfiguration configuration { get; } = configuration;
+    // private IConfiguration configuration { get; } = configuration;
+    private AppDbContext context { get; } = context;
+
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddSwaggerGen(options =>
@@ -64,17 +67,6 @@ public class Startup(IConfiguration configuration)
             };
         });
 
-        // check as google authentication is optional. googleId is a separate variable to remove warnings
-        var googleId = configuration["Authentication:Google:ClientId"];
-        var googleSecret = configuration["Authentication:Google:ClientSecret"];
-        if (googleId != null && googleSecret != null)
-        {
-            authBuilder.AddGoogle(options =>
-            {
-                options.ClientId = googleId;
-                options.ClientSecret = googleSecret;
-            });
-        }
 
         services.AddHttpContextAccessor();
     }
