@@ -6,11 +6,10 @@ using Microsoft.OpenApi.Models;
 
 namespace Zggff.MaiPractice;
 
-public class Startup(IConfiguration configuration, AppDbContext context)
+public class Startup(IConfiguration configuration)
 {
     private IConfiguration configuration { get; } = configuration;
     // private IConfiguration configuration { get; } = configuration;
-    private AppDbContext context { get; } = context;
 
     public void ConfigureServices(IServiceCollection services)
     {
