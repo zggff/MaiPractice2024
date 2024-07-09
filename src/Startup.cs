@@ -9,7 +9,6 @@ namespace Zggff.MaiPractice;
 public class Startup(IConfiguration configuration)
 {
     private IConfiguration configuration { get; } = configuration;
-    // private IConfiguration configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
     {
