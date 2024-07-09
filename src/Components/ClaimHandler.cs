@@ -22,11 +22,11 @@ public class ClaimHandler(IHttpContextAccessor accessor)
         return uint.Parse(Claim(ClaimTypes.NameIdentifier) ?? "0");
     }
 
+    // this funcion should not be used to check if the user is logged in
     public UserRole Role()
     {
-        var res = Enum.TryParse(Claim(ClaimTypes.Role) ?? "User", out UserRole role);
-        if (res)
+        if (Enum.TryParse(Claim(ClaimTypes.Role) ?? "User", out UserRole role))
             return role;
-        return UserRole.User;
+        return UserRole.User; // the default value. 
     }
 }
