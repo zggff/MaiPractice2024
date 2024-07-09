@@ -49,7 +49,7 @@ public class Startup(IConfiguration configuration)
         });
         services.AddControllers();
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        var authBuilder = services.AddAuthentication().AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -63,6 +63,19 @@ public class Startup(IConfiguration configuration)
                 ClockSkew = TimeSpan.Zero
             };
         });
+
+        // check as google authentication is optional. googleId is a separate variable to remove warnings
+        var googleId = configuration["Authentication:Google:ClientId"];
+        var googleSecret = configuration["Authentication:Google:ClientSecret"];
+        if (googleId != null && googleSecret != null)
+        {
+            authBuilder.AddGoogle(options =>
+            {
+                options.ClientId = googleId;
+                options.ClientSecret = googleSecret;
+            });
+        }
+
         services.AddHttpContextAccessor();
     }
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
