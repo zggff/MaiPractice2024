@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
-using Zggff.MaiPractice.Components;
+using Zggff.MaiPractice.Middleware;
 using Zggff.MaiPractice.Models;
 
 
@@ -17,8 +17,8 @@ record LoginResult(string Token);
 public class UserController(IConfiguration configuration, AppDbContext context, IHttpContextAccessor accessor) : ControllerBase
 {
     private AppDbContext context { get; } = context;
-    private ClaimHandler claims { get; } = new ClaimHandler(accessor);
-    private JwtHandler jwt { get; } = new JwtHandler(configuration);
+    private ClaimMiddleware claims { get; } = new ClaimMiddleware(accessor);
+    private JwtMiddleware jwt { get; } = new JwtMiddleware(configuration);
 
 
     [SwaggerOperation("login")]

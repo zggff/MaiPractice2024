@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
-using Zggff.MaiPractice.Components;
+using Zggff.MaiPractice.Middleware;
 using Zggff.MaiPractice.Models;
 
 namespace Zggff.MaiPractice.Controllers;
@@ -14,7 +14,7 @@ public class StoreController(AppDbContext context, IHttpContextAccessor accessor
 
 {
     private AppDbContext context { get; } = context;
-    private ClaimHandler claims { get; } = new ClaimHandler(accessor);
+    private ClaimMiddleware claims { get; } = new ClaimMiddleware(accessor);
 
 
     [HttpPost("order"), Authorize]

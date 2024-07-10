@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Zggff.MaiPractice.Models;
 
-namespace Zggff.MaiPractice.Components;
+namespace Zggff.MaiPractice.Middleware;
 
 
-public class ClaimHandler(IHttpContextAccessor accessor)
+public class ClaimMiddleware(IHttpContextAccessor accessor)
 {
     private IHttpContextAccessor accessor { get; } = accessor;
 

@@ -4,10 +4,10 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Zggff.MaiPractice.Models;
 
-namespace Zggff.MaiPractice.Components;
+namespace Zggff.MaiPractice.Middleware;
 
 
-public class JwtHandler(IConfiguration configuration)
+public class JwtMiddleware(IConfiguration configuration)
 {
     private IConfiguration configuration { get; } = configuration;
     public string Token(User user, double hours = 1)
